@@ -22,156 +22,118 @@ redact() {
 U="$(docker exec "$C" stat -c %u:%g "$FS/finance_health.py" 2>/dev/null || echo 10000:10000)"
 
 {
-docker exec -i -u "$U" -w "$FS" -e ACC="$ACC" "$C" "$PY" - <<'PY'
-import contextlib, importlib, inspect, io, itertools, json, os, runpy, sys
+docker exec -i -u "$U" -w "$FS" -e ACC="$ACC" -e PYTHONUNBUFFERED=1 "$C" timeout 600 "$PY" -u - <<'PY'
+import contextlib, io, itertools, json, os, runpy, sys, time
 from decimal import Decimal, InvalidOperation
+from urllib.parse import quote
 sys.path.insert(0, ".")
 ACC = os.environ.get("ACC", "FINACC-0001")
+_T0 = time.time()
+def step(msg):
+    print(f"[{int(time.time() - _T0):>3}s] {msg}", flush=True)
 
 def dec(v):
     try:
-        return Decimal(str(v).replace(" ", "").replace(",", "."))
+        return Decimal(str(v).replace(" ", "").replace(" ", "").replace(",", "."))
     except (InvalidOperation, ValueError):
         return None
 
-# 1. Список листов Finance и их колонок
-try:
-    import finance_config as cfg
-    schemas = getattr(cfg, "SHEET_SCHEMAS", {}) or {}
-except Exception as e:
-    print("!! finance_config:", repr(e)); schemas = {}
+# 1. Перехватываем авторизованные запросы Google Sheets, которые делает штатный health.
+from googleapiclient import http as gh
+seen = []
+_orig_execute = gh.HttpRequest.execute
+def _spy_execute(self, *a, **k):
+    seen.append(self)
+    return _orig_execute(self, *a, **k)
+gh.HttpRequest.execute = _spy_execute
 
-def cols_of(v):
-    if isinstance(v, dict):
-        for k in ("columns", "headers", "COLUMNS", "HEADERS"):
-            if k in v:
-                return list(v[k])
-        return list(v.keys())
-    if isinstance(v, (list, tuple)):
-        return [str(x) for x in v]
-    return []
-
-print("== Листы Finance:")
-for name, v in schemas.items():
-    c = cols_of(v)
-    print(f"  {name}: {', '.join(c[:12])}{' …' if len(c) > 12 else ''}")
-
-# 2. Перехватываем функции чтения, которыми пользуется штатный read-only health
-calls = []
-mods = []
-for mname in ("finance_sheet_store", "finance_google", "finance_google_quota", "finance_mvp_read"):
-    try:
-        mods.append(importlib.import_module(mname))
-    except Exception as e:
-        print(f"(модуль {mname} не подключился: {e!r})")
-
-def wrap(fn, label):
-    def w(*a, **k):
-        r = fn(*a, **k)
-        calls.append((label, fn, a, k, r))
-        return r
-    w.__wrapped__ = fn
-    return w
-
-for m in mods:
-    for n, f in inspect.getmembers(m, inspect.isfunction):
-        if f.__module__ == m.__name__:
-            setattr(m, n, wrap(f, f"{m.__name__}.{n}"))
-
+step("Запускаю штатный read-only health (чтение таблиц Finance, может ждать лимит Google)…")
 sys.argv = ["finance_mvp_cli.py", "health"]
 with contextlib.redirect_stdout(io.StringIO()):
     try:
         runpy.run_path("finance_mvp_cli.py", run_name="__main__")
     except SystemExit:
         pass
+gh.HttpRequest.execute = _orig_execute
+step(f"health прочитан, запросов к Google: {len(seen)}")
 
-def is_rows(r):
-    return isinstance(r, list) and r and isinstance(r[0], dict)
+base = next((r for r in seen if "sheets.googleapis.com" in r.uri and "/spreadsheets/" in r.uri), None)
+if base is None:
+    print("!! Не перехватил запрос к Google Sheets:", [r.uri[:80] for r in seen][:5]); raise SystemExit(0)
+sid = base.uri.split("/spreadsheets/")[1].split("/")[0].split(":")[0].split("?")[0]
 
-readers = []
-for label, fn, a, k, r in calls:
-    if not is_rows(r):
-        continue
-    for i, x in enumerate(a):
-        if isinstance(x, str) and x in schemas:
-            readers.append((label, fn, a, k, i, x)); break
-    else:
-        for kk, x in k.items():
-            if isinstance(x, str) and x in schemas:
-                readers.append((label, fn, a, k, kk, x)); break
+def read_sheet(name):
+    uri = (f"https://sheets.googleapis.com/v4/spreadsheets/{sid}/values/"
+           f"{quote(chr(39) + name + chr(39))}"
+           f"%21A1%3AZZ?alt=json")
+    req = gh.HttpRequest(base.http, base.postproc, uri, method="GET", headers={})
+    for attempt in range(6):
+        try:
+            values = req.execute(num_retries=3).get("values", [])
+            break
+        except gh.HttpError as e:
+            if getattr(e.resp, "status", 0) == 429 and attempt < 5:
+                step("Лимит Google Sheets, жду 65 с…"); time.sleep(65); continue
+            raise
+    if not values:
+        return []
+    head = [str(h).strip() for h in values[0]]
+    return [dict(zip(head, row + [""] * (len(head) - len(row)))) for row in values[1:]]
 
-print("\n== Чтения листов в health:", sorted({(r[0], r[5]) for r in readers}))
-if not readers:
-    print("!! Не нашёл функцию чтения листа. Вызовы:",
-          sorted({c[0] for c in calls})[:40])
-    raise SystemExit(0)
+# 2. Актуальная сверка PENDING_EXPECTED
+import finance_health as fh
+step("Читаю 13_СВЕРКИ…")
+recs = read_sheet("13_СВЕРКИ")
+latest = [x for x in fh.latest_reconciliation_snapshots(recs)
+          if x.get("RECON_TYPE") == "PENDING_EXPECTED" and x.get("FIN_ACCOUNT_ID") == ACC]
+diffs, want_count = [], None
+for x in latest:
+    d = fh.reconciliation_details(x)
+    want_count = d.get("pending_count")
+    print(f"Актуальная сверка: {x.get('STATUS')} expected={x.get('EXPECTED_VALUE')} actual={x.get('ACTUAL_VALUE')} "
+          f"diff={x.get('DIFF_VALUE')} pending_count={want_count} pending_observed_at={d.get('pending_observed_at')} "
+          f"({x.get('CREATED_AT')})")
+    if dec(x.get("DIFF_VALUE")):
+        diffs.append(dec(x.get("DIFF_VALUE")))
+if os.environ.get("DIFF"):
+    diffs = [Decimal(os.environ["DIFF"])]
 
-# 3. Лист с карточными авторизациями: колонки RAW_EVENT_ID + PAN_MASK + OBSERVED_AT
-cands = [n for n, v in schemas.items()
-         if {"RAW_EVENT_ID", "OBSERVED_AT", "AMOUNT"} <= set(cols_of(v))]
-print("Листы-кандидаты с авторизациями:", cands)
+# 3. Карточные авторизации по счёту
+step("Читаю 03_BANK_EVENTS_RAW…")
+raw = [r for r in read_sheet("03_BANK_EVENTS_RAW") if r.get("FIN_ACCOUNT_ID") == ACC]
+from collections import Counter
+print("Источники событий по счёту:", dict(Counter((r.get("SOURCE_ENDPOINT"), r.get("BANK_STATUS")) for r in raw)))
+card = [r for r in raw if r.get("PAN_MASK") or "card" in str(r.get("SOURCE_ENDPOINT", "")).lower()
+        or "author" in str(r.get("SOURCE_ENDPOINT", "")).lower()]
+if not card:
+    print("!! Не нашёл карточные события по счёту"); raise SystemExit(0)
+last_obs = max(str(r.get("OBSERVED_AT", "")) for r in card)
+batch = [r for r in card if str(r.get("OBSERVED_AT", "")) == last_obs]
+amt = lambda r: dec(r.get("ACCOUNT_AMOUNT") or r.get("AMOUNT")) or Decimal(0)
+print(f"\nПоследний срез авторизаций OBSERVED_AT={last_obs}: {len(batch)} операций на {sum(map(amt, batch))} ₽"
+      f"  (в сверке pending_count={want_count})")
+show = ("RAW_EVENT_ID", "EVENT_DATETIME", "AMOUNT", "CURRENCY", "TERMINAL_OWNER", "TERMINAL_CITY",
+        "BANK_STATUS", "PROCESSING_STATUS", "IMPORTED_AT")
+for r in sorted(batch, key=lambda r: str(r.get("EVENT_DATETIME", ""))):
+    print("  " + " | ".join(str(r.get(c, "")) for c in show))
 
-label, fn, a, k, pos, _ = readers[0]
-def read(sheet):
-    a2, k2 = list(a), dict(k)
-    if isinstance(pos, int):
-        a2[pos] = sheet
-    else:
-        k2[pos] = sheet
-    f = getattr(fn, "__wrapped__", fn)
-    return f(*a2, **k2)
-
-for sheet in cands:
-    try:
-        rows = read(sheet)
-    except Exception as e:
-        print(f"!! {sheet}: {e!r}"); continue
-    acc_rows = [r for r in rows if str(r.get("FIN_ACCOUNT_ID", "")) == ACC]
-    print(f"\n==== Лист {sheet}: всего {len(rows)}, по {ACC}: {len(acc_rows)}")
-    if not acc_rows:
-        continue
-    last_obs = max(str(r.get("OBSERVED_AT", "")) for r in acc_rows)
-    batch = [r for r in acc_rows if str(r.get("OBSERVED_AT", "")) == last_obs]
-    total = sum((dec(r.get("ACCOUNT_AMOUNT") or r.get("AMOUNT")) or 0) for r in batch)
-    print(f"Последний срез OBSERVED_AT={last_obs}: {len(batch)} операций на сумму {total}")
-    show = ("RAW_EVENT_ID", "EVENT_DATETIME", "AMOUNT", "ACCOUNT_AMOUNT", "CURRENCY",
-            "TERMINAL_OWNER", "TERMINAL_CITY", "BANK_STATUS", "PROCESSING_STATUS", "IMPORTED_AT")
-    for r in sorted(batch, key=lambda r: str(r.get("EVENT_DATETIME", ""))):
+# Авторизации, появившиеся 25.09 около 12:08–12:18 МСК, когда сверка сломалась
+print("\nКарточные события, импортированные 25.09.2026 (день, когда сверка перестала сходиться):")
+for r in sorted(card, key=lambda r: str(r.get("IMPORTED_AT", ""))):
+    if str(r.get("IMPORTED_AT", "")).startswith("2026-09-25"):
         print("  " + " | ".join(str(r.get(c, "")) for c in show))
 
-    # 4. Какие операции дают разницу из актуальной FAIL-сверки
-    diff_env = os.environ.get("DIFF")
-    diffs = [Decimal(diff_env)] if diff_env else []
-    try:
-        recs = read(next(n for n in schemas if "RECON" in n.upper() or "СВЕР" in n.upper()))
-        import finance_health as fh
-        latest = [x for x in fh.latest_reconciliation_snapshots(recs)
-                  if x.get("RECON_TYPE") == "PENDING_EXPECTED" and x.get("FIN_ACCOUNT_ID") == ACC]
-        for x in latest:
-            print(f"\nАктуальная сверка: {x.get('STATUS')} expected={x.get('EXPECTED_VALUE')} "
-                  f"actual={x.get('ACTUAL_VALUE')} diff={x.get('DIFF_VALUE')} ({x.get('CREATED_AT')})")
-            d = dec(x.get("DIFF_VALUE"))
-            if d:
-                diffs.append(d)
-    except StopIteration:
-        pass
-    except Exception as e:
-        print("(сверку перечитать не удалось:", repr(e), ")")
-
-    for d in diffs:
-        amts = [(r, dec(r.get("ACCOUNT_AMOUNT") or r.get("AMOUNT")) or 0) for r in batch]
-        hits = []
-        for n in (1, 2, 3):
-            for combo in itertools.combinations(amts, n):
-                if abs(sum(x[1] for x in combo) - d) <= Decimal("0.01"):
-                    hits.append(combo)
-        print(f"\nОперации, которые в сумме дают разницу {d}: {len(hits)} вариант(ов)")
-        for combo in hits[:10]:
-            print("  • " + " + ".join(
-                f"{x[0].get('TERMINAL_OWNER','?')} {x[1]} ({x[0].get('EVENT_DATETIME','')}, {x[0].get('RAW_EVENT_ID','')})"
-                for x in combo))
+for d in diffs:
+    amts = [(r, amt(r)) for r in batch]
+    hits = [c for n in (1, 2, 3) for c in itertools.combinations(amts, n)
+            if abs(sum(x[1] for x in c) - d) <= Decimal("0.01")]
+    print(f"\nОперации, которые в сумме дают разницу {d} ₽: {len(hits)} вариант(ов)")
+    for c in hits[:10]:
+        print("  • " + " + ".join(f"{x[0].get('TERMINAL_OWNER','?')} {x[1]} ₽ ({x[0].get('EVENT_DATETIME','')}, "
+                                    f"{x[0].get('RAW_EVENT_ID','')})" for x in c))
 print("\n== Готово")
 PY
 } 2>&1 | redact | tee "$OUT"
+[ "${PIPESTATUS[0]}" = "124" ] && echo "!! Остановлено по таймауту 10 минут (скорее всего, ждали лимит Google Sheets). Запусти ещё раз через пару минут."
 echo
 echo "Отчёт сохранён в $OUT — пришли его содержимое."
