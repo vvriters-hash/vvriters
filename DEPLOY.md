@@ -8,13 +8,20 @@
 
 ### 1. На сервере
 
+Выполняйте на самой виртуальной машине (хосте), **не внутри Docker-контейнера**
+(например, контейнера Hermes): контейнер теряет изменения при пересоздании,
+и в нём обычно нет SSH и веб-сервера.
+
 ```bash
-# отдельный пользователь для деплоя (рекомендуется)
-sudo adduser --disabled-password deploy
-sudo mkdir -p /var/www/vvriters
-sudo chown deploy:deploy /var/www/vvriters
-sudo apt install -y rsync   # rsync нужен и на сервере
+curl -fsSL https://raw.githubusercontent.com/vvriters-hash/vvriters/main/scripts/server-setup.sh -o server-setup.sh
+sudo bash server-setup.sh              # сайт по IP на порту 80
+# sudo bash server-setup.sh example.com  # или по домену
+# sudo bash server-setup.sh _ 8080       # если порт 80 уже занят
 ```
+
+Скрипт ставит nginx и rsync, создаёт пользователя `deploy` и папку
+`/var/www/vvriters` и настраивает nginx. Если репозиторий приватный,
+скопируйте скрипт на сервер вручную (например, через `scp`).
 
 ### 2. Ключ для деплоя (на своём компьютере)
 
@@ -46,19 +53,6 @@ ssh-keyscan -p 22 ВАШ_СЕРВЕР
 | `SSH_KNOWN_HOSTS` | вывод `ssh-keyscan` из шага 2 (рекомендуется)         |
 
 После этого удалите локальный приватный ключ или храните его в надёжном месте.
-
-### 4. Веб-сервер
-
-Папку `DEPLOY_PATH` должен раздавать веб-сервер, например nginx:
-
-```nginx
-server {
-    listen 80;
-    server_name example.com;
-    root /var/www/vvriters;
-    index index.html;
-}
-```
 
 ## Важно
 

@@ -40,6 +40,6 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           rsync -avz --delete \
-            --exclude '.git' --exclude '.github' --exclude 'DEPLOY.md' \
+            --exclude '.git' --exclude '.github' --exclude 'DEPLOY.md' --exclude 'scripts' \
             -e "ssh -i ~/.ssh/id_deploy -p $SSH_PORT" \
             ./ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
