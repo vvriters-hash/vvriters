@@ -1,0 +1,39 @@
+{
+ "items": [
+  {
+   "key": "tiktok:7400000000000000001",
+   "relevance": 9,
+   "reason": "та же ниша и формат"
+  },
+  {
+   "key": "tiktok:7400000000000000002",
+   "relevance": 7,
+   "reason": "POV-формат переносим"
+  },
+  {
+   "key": "tiktok:7400000000000000003",
+   "relevance": 8,
+   "reason": "подборка для удалёнщиков"
+  },
+  {
+   "key": "instagram:C9aaaaaaaa1",
+   "relevance": 9,
+   "reason": "тема цены — боль аудитории"
+  },
+  {
+   "key": "instagram:C9aaaaaaaa2",
+   "relevance": 8,
+   "reason": "ЦА — релоканты"
+  },
+  {
+   "key": "youtube:yt_short_0001",
+   "relevance": 6,
+   "reason": "визуальный формат"
+  },
+  {
+   "key": "youtube:yt_short_0002",
+   "relevance": 7,
+   "reason": "локальная находка"
+  }
+ ]
+}

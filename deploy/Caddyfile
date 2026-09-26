@@ -1,0 +1,8 @@
+{$SITE_ADDRESS} {
+	encode gzip
+	basic_auth {
+		{$REPORTS_USER} {$REPORTS_PASSWORD_HASH}
+	}
+	root * /data/runs
+	file_server browse
+}

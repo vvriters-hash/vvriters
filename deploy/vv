@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Обёртка для запуска конвейера на сервере.
+#   ./deploy/vv check
+#   ./deploy/vv run --brief /data/briefs/кофейня.txt --count 10
+#   ./deploy/vv analyze-url https://www.tiktok.com/@user/video/123
+#   ./deploy/vv logs            — снова подключиться к логу последнего запуска
+# Задача работает в фоне: закрытие SSH её не прерывает. Ctrl+C только отключает от лога.
+set -euo pipefail
+cd "$(dirname "$0")"
+COMPOSE=(docker compose -f docker-compose.yml)
+
+if [ "${1:-}" = "logs" ]; then
+  last=$(docker ps -a --filter "name=vv-" --format '{{.Names}}' | head -1)
+  [ -n "$last" ] || { echo "Запусков нет"; exit 1; }
+  exec docker logs -f "$last"
+fi
+
+if [ "${1:-}" = "check" ] || [ "${1:-}" = "--help" ] || [ -z "${1:-}" ]; then
+  exec "${COMPOSE[@]}" --profile cli run --rm pipeline "$@"
+fi
+
+mkdir -p /opt/vvriters/data/runs /opt/vvriters/data/briefs
+chown -R 1000:1000 /opt/vvriters/data 2>/dev/null || true
+# Храним контейнеры только 5 последних запусков (для ./deploy/vv logs)
+docker ps -a --filter "name=vv-" --filter "status=exited" --format '{{.Names}}' | tail -n +6 | xargs -r docker rm >/dev/null
+name="vv-$(date +%Y%m%d-%H%M%S)"
+"${COMPOSE[@]}" --profile cli run -d --name "$name" pipeline "$@" >/dev/null
+echo "Запущено: $name (лог: ./deploy/vv logs). Отчёт появится на https://$(grep -E '^SITE_ADDRESS=' /opt/vvriters/.env | cut -d= -f2)/"
+exec docker logs -f "$name"

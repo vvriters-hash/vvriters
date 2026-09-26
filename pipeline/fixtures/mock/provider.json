@@ -1,0 +1,318 @@
+{
+ "videos": [
+  {
+   "platform": "tiktok",
+   "id": "7400000000000000001",
+   "url": "https://www.tiktok.com/@coffee.tbilisi/video/7400000000000000001",
+   "author": "coffee.tbilisi",
+   "authorFollowers": 45000,
+   "caption": "Бариста показывает, как НЕ надо заваривать фильтр #кофе #тбилиси",
+   "publishedAt": "2026-09-10T00:00:00Z",
+   "durationSec": 28,
+   "views": 1200000,
+   "likes": 98000,
+   "comments": 2100,
+   "shares": 5400,
+   "saves": 8800,
+   "downloadUrl": null,
+   "thumbnailUrl": null,
+   "music": null
+  },
+  {
+   "platform": "tiktok",
+   "id": "7400000000000000002",
+   "url": "https://www.tiktok.com/@barista.life/video/7400000000000000002",
+   "author": "barista.life",
+   "authorFollowers": 310000,
+   "caption": "POV: ты впервые пробуешь флэт уайт на овсяном",
+   "publishedAt": "2026-09-03T00:00:00Z",
+   "durationSec": 21,
+   "views": 640000,
+   "likes": 41000,
+   "comments": 900,
+   "shares": 1200,
+   "saves": 3000,
+   "downloadUrl": null,
+   "thumbnailUrl": null,
+   "music": null
+  },
+  {
+   "platform": "tiktok",
+   "id": "7400000000000000003",
+   "url": "https://www.tiktok.com/@geo.food/video/7400000000000000003",
+   "author": "geo.food",
+   "authorFollowers": 12000,
+   "caption": "Топ-3 кофейни Тбилиси для удалёнщиков",
+   "publishedAt": "2026-08-27T00:00:00Z",
+   "durationSec": 35,
+   "views": 95000,
+   "likes": 7000,
+   "comments": 300,
+   "shares": 150,
+   "saves": 600,
+   "downloadUrl": null,
+   "thumbnailUrl": null,
+   "music": null
+  },
+  {
+   "platform": "instagram",
+   "id": "C9aaaaaaaa1",
+   "url": "https://www.instagram.com/reel/C9aaaaaaaa1/",
+   "author": "specialty.ge",
+   "authorFollowers": 22000,
+   "caption": "Почему капучино в сетевых стоит 12 лари, а у нас 9",
+   "publishedAt": "2026-08-20T00:00:00Z",
+   "durationSec": 18,
+   "views": 880000,
+   "likes": 52000,
+   "comments": 1300,
+   "shares": 4100,
+   "saves": 9500,
+   "downloadUrl": null,
+   "thumbnailUrl": null,
+   "music": null
+  },
+  {
+   "platform": "instagram",
+   "id": "C9aaaaaaaa2",
+   "url": "https://www.instagram.com/reel/C9aaaaaaaa2/",
+   "author": "relocant.diary",
+   "authorFollowers": 68000,
+   "caption": "Мой первый месяц в Тбилиси: где работать с ноутом",
+   "publishedAt": "2026-08-13T00:00:00Z",
+   "durationSec": 42,
+   "views": 410000,
+   "likes": 23000,
+   "comments": 2800,
+   "shares": 900,
+   "saves": 4100,
+   "downloadUrl": null,
+   "thumbnailUrl": null,
+   "music": null
+  },
+  {
+   "platform": "youtube",
+   "id": "yt_short_0001",
+   "url": "https://www.youtube.com/shorts/yt_short_0001",
+   "author": "CoffeeLab",
+   "authorFollowers": 150000,
+   "caption": "Latte art fail vs win #shorts",
+   "publishedAt": "2026-08-06T00:00:00Z",
+   "durationSec": 31,
+   "views": 2300000,
+   "likes": 120000,
+   "comments": 3400,
+   "shares": null,
+   "saves": null,
+   "downloadUrl": null,
+   "thumbnailUrl": null,
+   "music": null
+  },
+  {
+   "platform": "youtube",
+   "id": "yt_short_0002",
+   "url": "https://www.youtube.com/shorts/yt_short_0002",
+   "author": "TbilisiWalks",
+   "authorFollowers": 9000,
+   "caption": "Кофейня в старом Тбилиси, о которой никто не знает",
+   "publishedAt": "2026-07-30T00:00:00Z",
+   "durationSec": 47,
+   "views": 54000,
+   "likes": 3100,
+   "comments": 210,
+   "shares": null,
+   "saves": null,
+   "downloadUrl": null,
+   "thumbnailUrl": null,
+   "music": null
+  }
+ ],
+ "comments": {
+  "7400000000000000001": [
+   {
+    "text": "А где это находится? Адрес дайте",
+    "likes": 320
+   },
+   {
+    "text": "Сколько стоит флэт уайт?",
+    "likes": 210
+   },
+   {
+    "text": "Наконец-то кто-то сказал правду про сетевой кофе",
+    "likes": 150
+   },
+   {
+    "text": "Дорого для Тбилиси",
+    "likes": 40
+   }
+  ],
+  "7400000000000000002": [
+   {
+    "text": "А где это находится? Адрес дайте",
+    "likes": 320
+   },
+   {
+    "text": "Сколько стоит флэт уайт?",
+    "likes": 210
+   },
+   {
+    "text": "Наконец-то кто-то сказал правду про сетевой кофе",
+    "likes": 150
+   },
+   {
+    "text": "Дорого для Тбилиси",
+    "likes": 40
+   }
+  ],
+  "7400000000000000003": [
+   {
+    "text": "А где это находится? Адрес дайте",
+    "likes": 320
+   },
+   {
+    "text": "Сколько стоит флэт уайт?",
+    "likes": 210
+   },
+   {
+    "text": "Наконец-то кто-то сказал правду про сетевой кофе",
+    "likes": 150
+   },
+   {
+    "text": "Дорого для Тбилиси",
+    "likes": 40
+   }
+  ],
+  "C9aaaaaaaa1": [
+   {
+    "text": "А где это находится? Адрес дайте",
+    "likes": 320
+   },
+   {
+    "text": "Сколько стоит флэт уайт?",
+    "likes": 210
+   },
+   {
+    "text": "Наконец-то кто-то сказал правду про сетевой кофе",
+    "likes": 150
+   },
+   {
+    "text": "Дорого для Тбилиси",
+    "likes": 40
+   }
+  ],
+  "C9aaaaaaaa2": [
+   {
+    "text": "А где это находится? Адрес дайте",
+    "likes": 320
+   },
+   {
+    "text": "Сколько стоит флэт уайт?",
+    "likes": 210
+   },
+   {
+    "text": "Наконец-то кто-то сказал правду про сетевой кофе",
+    "likes": 150
+   },
+   {
+    "text": "Дорого для Тбилиси",
+    "likes": 40
+   }
+  ],
+  "yt_short_0001": [
+   {
+    "text": "А где это находится? Адрес дайте",
+    "likes": 320
+   },
+   {
+    "text": "Сколько стоит флэт уайт?",
+    "likes": 210
+   },
+   {
+    "text": "Наконец-то кто-то сказал правду про сетевой кофе",
+    "likes": 150
+   },
+   {
+    "text": "Дорого для Тбилиси",
+    "likes": 40
+   }
+  ],
+  "yt_short_0002": [
+   {
+    "text": "А где это находится? Адрес дайте",
+    "likes": 320
+   },
+   {
+    "text": "Сколько стоит флэт уайт?",
+    "likes": 210
+   },
+   {
+    "text": "Наконец-то кто-то сказал правду про сетевой кофе",
+    "likes": 150
+   },
+   {
+    "text": "Дорого для Тбилиси",
+    "likes": 40
+   }
+  ]
+ },
+ "authorViews": {
+  "coffee.tbilisi": [
+   200000,
+   240000,
+   150000,
+   300000,
+   171428
+  ],
+  "barista.life": [
+   106666,
+   128000,
+   80000,
+   160000,
+   91428
+  ],
+  "geo.food": [
+   15833,
+   19000,
+   11875,
+   23750,
+   13571
+  ],
+  "specialty.ge": [
+   146666,
+   176000,
+   110000,
+   220000,
+   125714
+  ],
+  "relocant.diary": [
+   68333,
+   82000,
+   51250,
+   102500,
+   58571
+  ],
+  "CoffeeLab": [
+   383333,
+   460000,
+   287500,
+   575000,
+   328571
+  ],
+  "TbilisiWalks": [
+   9000,
+   10800,
+   6750,
+   13500,
+   7714
+  ]
+ },
+ "transcripts": {
+  "7400000000000000001": "Стоп. Если вы завариваете фильтр вот так — вы теряете половину вкуса. Смотрите, сейчас покажу, как правильно.",
+  "7400000000000000002": "Стоп. Если вы завариваете фильтр вот так — вы теряете половину вкуса. Смотрите, сейчас покажу, как правильно.",
+  "7400000000000000003": "Стоп. Если вы завариваете фильтр вот так — вы теряете половину вкуса. Смотрите, сейчас покажу, как правильно.",
+  "C9aaaaaaaa1": "Стоп. Если вы завариваете фильтр вот так — вы теряете половину вкуса. Смотрите, сейчас покажу, как правильно.",
+  "C9aaaaaaaa2": "Стоп. Если вы завариваете фильтр вот так — вы теряете половину вкуса. Смотрите, сейчас покажу, как правильно.",
+  "yt_short_0001": "Стоп. Если вы завариваете фильтр вот так — вы теряете половину вкуса. Смотрите, сейчас покажу, как правильно.",
+  "yt_short_0002": "Стоп. Если вы завариваете фильтр вот так — вы теряете половину вкуса. Смотрите, сейчас покажу, как правильно."
+ }
+}

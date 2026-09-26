@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Подготовка сервера для тестового стенда VVriters Studio.
-# Делает: swap 4 ГБ, Docker + compose, папку /opt/vvriters.
-# Не трогает файрвол и работающие контейнеры. Повторный запуск безопасен.
+# Делает: swap 4 ГБ, Docker + compose (если их нет), папку /opt/vvriters.
+# Не перезапускает Docker, не трогает файрвол и работающие контейнеры (Hermes и др.).
+# Размер логов ограничивается в docker-compose проекта, а не глобально. Повторный запуск безопасен.
 # Запуск на сервере (не в контейнере): sudo bash deploy/setup.sh
 set -euo pipefail
 
@@ -44,18 +45,7 @@ else
   docker compose version >/dev/null 2>&1 || apt-get install -y docker-compose-plugin
 fi
 
-echo "== 3. Ограничение логов Docker (чтобы не съели диск) =="
-if [ ! -f /etc/docker/daemon.json ]; then
-  cat > /etc/docker/daemon.json <<'JSON'
-{ "log-driver": "json-file", "log-opts": { "max-size": "10m", "max-file": "3" } }
-JSON
-  systemctl restart docker
-  echo "Настроено"
-else
-  echo "/etc/docker/daemon.json уже есть — не трогаю"
-fi
-
-echo "== 4. Папка проекта =="
+echo "== 3. Папка проекта =="
 mkdir -p /opt/vvriters
 chmod 750 /opt/vvriters
 echo "/opt/vvriters создана"

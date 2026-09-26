@@ -1,0 +1,32 @@
+{
+ "search_language": "русский",
+ "queries": [
+  {
+   "platform": "tiktok",
+   "type": "keyword",
+   "value": "кофейня тбилиси",
+   "rationale": "прямой запрос ниши"
+  },
+  {
+   "platform": "tiktok",
+   "type": "hashtag",
+   "value": "бариста",
+   "rationale": "форматы от лица бариста"
+  },
+  {
+   "platform": "instagram",
+   "type": "keyword",
+   "value": "где работать с ноутбуком тбилиси",
+   "rationale": "боль аудитории"
+  },
+  {
+   "platform": "youtube",
+   "type": "keyword",
+   "value": "latte art shorts",
+   "rationale": "международные форматы"
+  }
+ ],
+ "min_views": 50000,
+ "period_days": 90,
+ "notes": "ищем форматы «бариста объясняет» и подборки мест для удалёнщиков"
+}

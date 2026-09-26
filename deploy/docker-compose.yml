@@ -1,0 +1,40 @@
+# Тестовый стенд VVriters Studio. Запуск — см. deploy/README.md.
+name: vvriters
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+services:
+  # Конвейер аналитики: запускается по команде (./deploy/vv run …), постоянно не работает.
+  pipeline:
+    build: ../pipeline
+    image: vvriters/pipeline:local
+    env_file: /opt/vvriters/.env
+    volumes:
+      - /opt/vvriters/data:/data
+    mem_limit: 1200m
+    memswap_limit: 2400m
+    cpus: 1.5
+    logging: *logging
+    profiles: ["cli"]
+
+  # Отчёты по адресу https://<SITE_ADDRESS> под паролем.
+  reports:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    env_file: /opt/vvriters/.env
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - /opt/vvriters/data/runs:/data/runs:ro
+      - caddy_data:/data/caddy
+      - caddy_config:/config
+    environment:
+      XDG_DATA_HOME: /data/caddy
+    mem_limit: 128m
+    logging: *logging
+
+volumes:
+  caddy_data:
+  caddy_config:

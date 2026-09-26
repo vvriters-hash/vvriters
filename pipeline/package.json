@@ -1,0 +1,31 @@
+{
+  "name": "@vvriters/pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VVriters Studio — Phase 0 prototype of the reference analytics pipeline",
+  "type": "module",
+  "bin": {
+    "vvriters-pipeline": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "marked": "^18.0.14",
+    "openai": "^7.23.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
